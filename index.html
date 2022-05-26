@@ -3,81 +3,113 @@
 
 <head>
   <meta charset="utf-8">
-  <title>タイトル</title>
+  <title>Twitter Search</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
-  <script src="./js/script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="./js/script.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body>
-  <section class="section">
-    <h1 class="title">Twitter Search</h1>
+  <div class="wrapper" x-data="app()">
+    <section class="section">
+      <h1 class="title">Twitter Search</h1>
 
-    <div class="field">
+      <div class="field">
+        <div class="control">
+          <label class="label">キーワード</label>
+          <input id="keyword" class="input" type="text" placeholder="キーワードを入力" x-model="keyword">
+        </div>
+      </div>
+      <div class="columns">
+        <div class="field column">
+          <div class="control">
+            <label class="label">開始日</label>
+            <input id="since" class="input" type="date" placeholder="開始日" x-model="since">
+          </div>
+        </div>
+        <div class="field column">
+          <div class="control">
+            <label class="label">終了日</label>
+            <input id="until" class="input" :class="isUntilBeforeSince() && 'is-danger'" type="date" placeholder="終了日"
+              x-model="until">
+          </div>
+        </div>
+      </div>
+      <div class="columns">
+        <div class="column field">
+          <div class="control">
+            <label class="label">最低いいね数</label>
+            <input id="min-faves" class="input" type="number" placeholder="0" x-model="minFaves">
+          </div>
+        </div>
+        <div class="column field">
+          <div class="control">
+            <label class="label">最低RT数</label>
+            <input id="min-retweets" class="input" type="number" placeholder="0" x-model="minRetweets">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          <label class="label">言語</label>
+          <div class="select">
+            <select name="lang" id="lang" x-model="lang">
+              <option value="">未選択</option>
+              <option value="ja">日本語</option>
+              <option value="en">英語</option>
+            </select>
+          </div>
+        </div>
+      </div>
       <div class="control">
-        <label class="label">キーワード</label>
-        <input id="keyword" class="input" type="text" placeholder="キーワードを入力">
+        <table class="table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>画像</th>
+              <th>動画</th>
+              <th>リンク</th>
+              <th>認証済み</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>指定なし</th>
+              <td><input type="radio" name="images" value="" x-model="imagesFilter"></td>
+              <td><input type="radio" name="videos" value="" x-model="videosFilter"></td>
+              <td><input type="radio" name="links" value="" x-model="linksFilter"></td>
+              <td><input type="radio" name="verified" value="" x-model="verifiedFilter"></td>
+            </tr>
+            <tr>
+              <th>含む</th>
+              <td><input type="radio" name="images" value="include" x-model="imagesFilter"></td>
+              <td><input type="radio" name="videos" value="include" x-model="videosFilter"></td>
+              <td><input type="radio" name="links" value="include" x-model="linksFilter"></td>
+              <td><input type="radio" name="verified" value="include" x-model="verifiedFilter"></td>
+            </tr>
+            <tr>
+              <th>含まない</th>
+              <td><input type="radio" name="images" value="exclude" x-model="imagesFilter"></td>
+              <td><input type="radio" name="videos" value="exclude" x-model="videosFilter"></td>
+              <td><input type="radio" name="links" value="exclude" x-model="linksFilter"></td>
+              <td><input type="radio" name="verified" value="exclude" x-model="verifiedFilter"></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
-    <div class="columns">
-      <div class="field column">
+      <div class="field">
         <div class="control">
-          <label class="label">開始日</label>
-          <input id="since" class="input" type="text" placeholder="開始日">
+          <label for="" class="result">URL</label>
+          <input type="text" id="url" class="input" :class="!isValidUrl() && 'is-danger'" readonly=" readonly"
+            x-model="createUrl()">
         </div>
       </div>
-      <div class="field column">
-        <div class="control">
-          <label class="label">終了日</label>
-          <input id="until" class="input" type="text" placeholder="終了日">
-        </div>
-      </div>
-    </div>
-    <div class="columns">
-      <div class="column field">
-        <div class="control">
-          <label class="label">最低いいね数</label>
-          <input id="min-faves" class="input" type="number" placeholder="0">
-        </div>
-      </div>
-      <div class="column field">
-        <div class="control">
-          <label class="label">最低RT数</label>
-          <input id="min-retweets" class="input" type="number" placeholder="0">
-        </div>
-      </div>
-    </div>
-    <div class="field">
-      <div class="control">
-        <label class="label">言語</label>
-        <div class="select">
-          <select name="lang" id="lang">
-            <option value="">未選択</option>
-            <option value="ja">日本語</option>
-            <option value="en">英語</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    <label class="checkbox">
-      <input id="image-filter" type="checkbox">
-      画像を含むツイートのみ表示
-    </label>
-    <label class="checkbox">
-      <input id="video-filter" type="checkbox">
-      動画を含むツイートのみ表示
-    </label>
-    <div class="field">
-      <div class="control">
-        <label for="" class="result">URL</label>
-        <input type="text" id="url" class="input" readonly="readonly">
-      </div>
-    </div>
-    <a href="" id="search_button" class="button is-primary" target="_blank" rel="noopener noreferrer">検索</a>
-  </section>
+      <button @click="openUrl()" id="search_button" class="button is-primary" :disabled="!isValidUrl()">検索</button>
+    </section>
+  </div>
 </body>
 
 </html>
